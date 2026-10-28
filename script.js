@@ -127,7 +127,7 @@ async function submitLevel1() {
 }
 
 // ==========================================
-// LEVEL 2 LOGIC
+// LEVEL 2 LOGIC (Bulletproof Local Base64 Check)
 // ==========================================
 async function submitLevel2() {
   if (activeLevel !== 2) {
@@ -136,33 +136,31 @@ async function submitLevel2() {
 
   const inputPw = document.getElementById("lvl2-input").value;
 
-  try {
-    const res = await fetch("passwords.json");
-    const data = await res.json();
+  // Encoded password: "4920" encoded in base64 is "NDkyMA=="
+  // This avoids external json fetch errors while keeping it hidden from plain sight!
+  const ENCODED_TARGET = "NDkyMA==";
+  const decodedTarget = atob(ENCODED_TARGET);
 
-    if (inputPw === data.level2_password) {
-      triggerPop();
-      log("LEVEL 2 CRACKED! Password Accepted.", "success");
-      document.getElementById("lvl2-badge").innerText = "UNLOCKED";
-      document.getElementById("lvl2-badge").classList.add("unlocked");
-      setStepState(2, "cleared");
+  if (inputPw === decodedTarget) {
+    triggerPop();
+    log("LEVEL 2 CRACKED! Password Accepted.", "success");
+    document.getElementById("lvl2-badge").innerText = "UNLOCKED";
+    document.getElementById("lvl2-badge").classList.add("unlocked");
+    setStepState(2, "cleared");
 
-      activeLevel = 3;
-      sendAppsScriptRequest({ action: "breach_notification", level: "Level 2" });
+    activeLevel = 3;
+    sendAppsScriptRequest({ action: "breach_notification", level: "Level 2" });
 
-      setTimeout(() => {
-        document.getElementById("lvl2-container").classList.add("hidden");
-        document.getElementById("lvl3-container").classList.remove("hidden");
-        setStepState(3, "active");
-        log("LEVEL 3 ENGAGED: Ready for cloud guess verification.");
-      }, 1000);
+    setTimeout(() => {
+      document.getElementById("lvl2-container").classList.add("hidden");
+      document.getElementById("lvl3-container").classList.remove("hidden");
+      setStepState(3, "active");
+      log("LEVEL 3 ENGAGED: Ready for cloud guess verification.");
+    }, 1000);
 
-    } else {
-      log(`LEVEL 2 FAILED: Incorrect password -> [${inputPw}]`, "err");
-      sendAppsScriptRequest({ action: "wrong_guess_log", level: "Level 2", guess: inputPw });
-    }
-  } catch (err) {
-    log("Error loading JSON config file.", "err");
+  } else {
+    log(`LEVEL 2 FAILED: Incorrect password -> [${inputPw}]`, "err");
+    sendAppsScriptRequest({ action: "wrong_guess_log", level: "Level 2", guess: inputPw });
   }
 }
 
