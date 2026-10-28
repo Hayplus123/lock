@@ -4,8 +4,6 @@ const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMPQMRw3yaWadbtP
 // Level 1 Combination stored in JS
 const LEVEL1_COMBO = [3, 8, 1, 4];
 let currentDials = [0, 0, 0, 0];
-
-// Track current active level server-side/client-side state to prevent skipping
 let activeLevel = 1;
 
 // Logging helper
@@ -17,25 +15,24 @@ function log(msg, type = "normal") {
   c.scrollTop = c.scrollHeight;
 }
 
-// Pop lock visual effect
 function triggerPop() {
   const card = document.getElementById("lock-card");
   card.classList.remove("pop-animation");
-  void card.offsetWidth; // trigger reflow
+  void card.offsetWidth;
   card.classList.add("pop-animation");
 }
 
-// Update UI progress steps
 function setStepState(levelNum, state) {
   const el = document.getElementById(`step-${levelNum}`);
   if (state === "cleared") {
     el.className = "step cleared";
   } else if (state === "active") {
     el.className = "step active";
+  } else {
+    el.className = "step";
   }
 }
 
-// Send logs, verification checks, and alerts to Google Apps Script
 async function sendAppsScriptRequest(actionData) {
   try {
     const response = await fetch(APPSCRIPT_URL, {
@@ -52,22 +49,44 @@ async function sendAppsScriptRequest(actionData) {
 }
 
 // ==========================================
-// SECURITY TRAP: Detect & Shoot Back at Tampering
+// PUNISHMENT COUNTER-ATTACK: Demote & Reset
 // ==========================================
-function triggerSecurityCountermeasure(cheatType, suspiciousData = "") {
-  log(`🚨 SECURITY BREACH DETECTED: ${cheatType}`, "err");
-  console.error(`%c[COUNTER-ATTACK ACTIVATED] Unauthorized tampering intercepted: ${cheatType}`, "color: #ff0055; font-size: 14px; font-weight: bold;");
-
-  // Send a special "tamper_alert" to your Google Spreadsheet & email alert!
-  sendAppsScriptRequest({
-    action: "tamper_alert",
-    cheatType: cheatType,
-    details: suspiciousData || "Attempted console override or sequence skip."
+async function triggerDemotionPenalty(reason) {
+  log(`🚨 SECURITY BREACH: ${reason}. DEMOTING USER!`, "err");
+  
+  // Notify backend to regenerate secrets and log punishment
+  await sendAppsScriptRequest({
+    action: "demote_penalty",
+    reason: reason
   });
 
-  // Punish the hacker in the UI
-  document.getElementById("lock-card").style.borderColor = "var(--neon-red)";
-  log("⚠️ WARNING: Your IP and cheat attempt have been logged to the central command server!", "err");
+  // Calculate penalty demotion (Drop back 1 level, minimum Level 1)
+  if (activeLevel > 1) {
+    activeLevel--;
+  }
+
+  // Reset UI back to the demoted level
+  document.getElementById("lvl1-container").classList.add("hidden");
+  document.getElementById("lvl2-container").classList.add("hidden");
+  document.getElementById("lvl3-container").classList.add("hidden");
+  document.getElementById("lvl4-container").classList.add("hidden");
+
+  if (activeLevel === 1) {
+    document.getElementById("lvl1-container").classList.remove("hidden");
+    setStepState(1, "active");
+    setStepState(2, "");
+    log("⚠️ PENALTY APPLIED: Dropped back to LEVEL 1. Combination re-locked!", "err");
+  } else if (activeLevel === 2) {
+    document.getElementById("lvl2-container").classList.remove("hidden");
+    setStepState(2, "active");
+    setStepState(3, "");
+    log("⚠️ PENALTY APPLIED: Dropped back to LEVEL 2. Password has been regenerated!", "err");
+  } else if (activeLevel === 3) {
+    document.getElementById("lvl3-container").classList.remove("hidden");
+    setStepState(3, "active");
+    setStepState(4, "", "");
+    log("⚠️ PENALTY APPLIED: Dropped back to LEVEL 3. Cloud vault target has changed!", "err");
+  }
 }
 
 // ==========================================
@@ -80,8 +99,7 @@ function changeDial(index, delta) {
 
 async function submitLevel1() {
   if (activeLevel !== 1) {
-    triggerSecurityCountermeasure("Level Bypass Attempt", "Tried submitting Level 1 out of order.");
-    return;
+    return triggerDemotionPenalty("Out-of-order submission attempt on Level 1");
   }
 
   const isCorrect = currentDials.every((val, idx) => val === LEVEL1_COMBO[idx]);
@@ -93,7 +111,7 @@ async function submitLevel1() {
     document.getElementById("lvl1-badge").classList.add("unlocked");
     setStepState(1, "cleared");
 
-    activeLevel = 2; // Advance legitimate state
+    activeLevel = 2;
     sendAppsScriptRequest({ action: "breach_notification", level: "Level 1" });
 
     setTimeout(() => {
@@ -113,14 +131,12 @@ async function submitLevel1() {
 // ==========================================
 async function submitLevel2() {
   if (activeLevel !== 2) {
-    triggerSecurityCountermeasure("Level 2 Bypass", "Attempted to skip Level 2 or submit out of order.");
-    return;
+    return triggerDemotionPenalty("Attempted bypass or sequence skip on Level 2");
   }
 
   const inputPw = document.getElementById("lvl2-input").value;
 
   try {
-    log("Fetching passwords.json from server...");
     const res = await fetch("passwords.json");
     const data = await res.json();
 
@@ -131,7 +147,7 @@ async function submitLevel2() {
       document.getElementById("lvl2-badge").classList.add("unlocked");
       setStepState(2, "cleared");
 
-      activeLevel = 3; // Advance state
+      activeLevel = 3;
       sendAppsScriptRequest({ action: "breach_notification", level: "Level 2" });
 
       setTimeout(() => {
@@ -142,8 +158,7 @@ async function submitLevel2() {
       }, 1000);
 
     } else {
-      log(`LEVEL 2 FAILED: Incorrect password guessed -> [${inputPw}]`, "err");
-      // Log wrong guesses to trace what they tried!
+      log(`LEVEL 2 FAILED: Incorrect password -> [${inputPw}]`, "err");
       sendAppsScriptRequest({ action: "wrong_guess_log", level: "Level 2", guess: inputPw });
     }
   } catch (err) {
@@ -156,8 +171,7 @@ async function submitLevel2() {
 // ==========================================
 async function submitLevel3() {
   if (activeLevel !== 3) {
-    triggerSecurityCountermeasure("Level 3 Bypass", "Attempted to skip Level 3.");
-    return;
+    return triggerDemotionPenalty("Attempted bypass on Level 3");
   }
 
   const guess = document.getElementById("lvl3-input").value;
@@ -177,7 +191,7 @@ async function submitLevel3() {
     document.getElementById("lvl3-badge").classList.add("unlocked");
     setStepState(3, "cleared");
 
-    activeLevel = 4; // Advance state
+    activeLevel = 4;
     sendAppsScriptRequest({ action: "breach_notification", level: "Level 3" });
 
     setTimeout(() => {
@@ -197,8 +211,7 @@ async function submitLevel3() {
 // ==========================================
 async function submitLevel4Step1() {
   if (activeLevel !== 4) {
-    triggerSecurityCountermeasure("Level 4 Bypass", "Attempted to skip Level 4.");
-    return;
+    return triggerDemotionPenalty("Attempted bypass on Level 4");
   }
 
   const masterNum = document.getElementById("lvl4-num-input").value;
@@ -225,8 +238,7 @@ async function submitLevel4Step1() {
 
 async function submitLevel4Step2() {
   if (activeLevel !== 4) {
-    triggerSecurityCountermeasure("Level 4 Step 2 Bypass", "Unauthorized 2FA submission.");
-    return;
+    return triggerDemotionPenalty("Attempted unauthorized 2FA submission");
   }
 
   const tokenInput = document.getElementById("lvl4-2fa-input").value;
@@ -253,9 +265,7 @@ async function submitLevel4Step2() {
   }
 }
 
-// ==========================================
-// TAMPER-PROOF WATCHDOG (Freezes functions if overwritten)
-// ==========================================
+// Tamper-proofing functions
 Object.freeze(submitLevel1);
 Object.freeze(submitLevel2);
 Object.freeze(submitLevel3);
