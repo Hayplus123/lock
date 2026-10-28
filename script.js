@@ -5,6 +5,9 @@ const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMPQMRw3yaWadbtP
 const LEVEL1_COMBO = [3, 8, 1, 4];
 let currentDials = [0, 0, 0, 0];
 
+// Track current active level server-side/client-side state to prevent skipping
+let activeLevel = 1;
+
 // Logging helper
 function log(msg, type = "normal") {
   const c = document.getElementById("console");
@@ -49,6 +52,25 @@ async function sendAppsScriptRequest(actionData) {
 }
 
 // ==========================================
+// SECURITY TRAP: Detect & Shoot Back at Tampering
+// ==========================================
+function triggerSecurityCountermeasure(cheatType, suspiciousData = "") {
+  log(`🚨 SECURITY BREACH DETECTED: ${cheatType}`, "err");
+  console.error(`%c[COUNTER-ATTACK ACTIVATED] Unauthorized tampering intercepted: ${cheatType}`, "color: #ff0055; font-size: 14px; font-weight: bold;");
+
+  // Send a special "tamper_alert" to your Google Spreadsheet & email alert!
+  sendAppsScriptRequest({
+    action: "tamper_alert",
+    cheatType: cheatType,
+    details: suspiciousData || "Attempted console override or sequence skip."
+  });
+
+  // Punish the hacker in the UI
+  document.getElementById("lock-card").style.borderColor = "var(--neon-red)";
+  log("⚠️ WARNING: Your IP and cheat attempt have been logged to the central command server!", "err");
+}
+
+// ==========================================
 // LEVEL 1 LOGIC
 // ==========================================
 function changeDial(index, delta) {
@@ -57,6 +79,11 @@ function changeDial(index, delta) {
 }
 
 async function submitLevel1() {
+  if (activeLevel !== 1) {
+    triggerSecurityCountermeasure("Level Bypass Attempt", "Tried submitting Level 1 out of order.");
+    return;
+  }
+
   const isCorrect = currentDials.every((val, idx) => val === LEVEL1_COMBO[idx]);
 
   if (isCorrect) {
@@ -66,10 +93,9 @@ async function submitLevel1() {
     document.getElementById("lvl1-badge").classList.add("unlocked");
     setStepState(1, "cleared");
 
-    // Notify Apps Script & Record Log
+    activeLevel = 2; // Advance legitimate state
     sendAppsScriptRequest({ action: "breach_notification", level: "Level 1" });
 
-    // Unlock Level 2
     setTimeout(() => {
       document.getElementById("lvl1-container").classList.add("hidden");
       document.getElementById("lvl2-container").classList.remove("hidden");
@@ -86,6 +112,11 @@ async function submitLevel1() {
 // LEVEL 2 LOGIC
 // ==========================================
 async function submitLevel2() {
+  if (activeLevel !== 2) {
+    triggerSecurityCountermeasure("Level 2 Bypass", "Attempted to skip Level 2 or submit out of order.");
+    return;
+  }
+
   const inputPw = document.getElementById("lvl2-input").value;
 
   try {
@@ -100,9 +131,9 @@ async function submitLevel2() {
       document.getElementById("lvl2-badge").classList.add("unlocked");
       setStepState(2, "cleared");
 
+      activeLevel = 3; // Advance state
       sendAppsScriptRequest({ action: "breach_notification", level: "Level 2" });
 
-      // Unlock Level 3
       setTimeout(() => {
         document.getElementById("lvl2-container").classList.add("hidden");
         document.getElementById("lvl3-container").classList.remove("hidden");
@@ -111,7 +142,9 @@ async function submitLevel2() {
       }, 1000);
 
     } else {
-      log("LEVEL 2 FAILED: Access Denied.", "err");
+      log(`LEVEL 2 FAILED: Incorrect password guessed -> [${inputPw}]`, "err");
+      // Log wrong guesses to trace what they tried!
+      sendAppsScriptRequest({ action: "wrong_guess_log", level: "Level 2", guess: inputPw });
     }
   } catch (err) {
     log("Error loading JSON config file.", "err");
@@ -122,6 +155,11 @@ async function submitLevel2() {
 // LEVEL 3 LOGIC
 // ==========================================
 async function submitLevel3() {
+  if (activeLevel !== 3) {
+    triggerSecurityCountermeasure("Level 3 Bypass", "Attempted to skip Level 3.");
+    return;
+  }
+
   const guess = document.getElementById("lvl3-input").value;
   if (!guess) return log("Enter a guess first!", "err");
 
@@ -139,9 +177,9 @@ async function submitLevel3() {
     document.getElementById("lvl3-badge").classList.add("unlocked");
     setStepState(3, "cleared");
 
+    activeLevel = 4; // Advance state
     sendAppsScriptRequest({ action: "breach_notification", level: "Level 3" });
 
-    // Unlock Level 4
     setTimeout(() => {
       document.getElementById("lvl3-container").classList.add("hidden");
       document.getElementById("lvl4-container").classList.remove("hidden");
@@ -150,14 +188,19 @@ async function submitLevel3() {
     }, 1000);
 
   } else {
-    log("LEVEL 3 FAILED: Incorrect guess returned by Cloud Vault.", "err");
+    log(`LEVEL 3 FAILED: Incorrect guess -> [${guess}]`, "err");
   }
 }
 
 // ==========================================
-// LEVEL 4 LOGIC (Step 1 Number + Step 2 2FA)
+// LEVEL 4 LOGIC
 // ==========================================
 async function submitLevel4Step1() {
+  if (activeLevel !== 4) {
+    triggerSecurityCountermeasure("Level 4 Bypass", "Attempted to skip Level 4.");
+    return;
+  }
+
   const masterNum = document.getElementById("lvl4-num-input").value;
   if (!masterNum) return log("Enter Master Number!", "err");
 
@@ -172,16 +215,20 @@ async function submitLevel4Step1() {
     log("LEVEL 4 (STEP 1) CRACKED! Master Number matched.", "success");
     log("Random 2FA letter code generated in Verification Spreadsheet!", "success");
 
-    // Hide Step 1 UI and show Step 2 UI
     document.getElementById("lvl4-step1-box").classList.add("hidden");
     document.getElementById("lvl4-step2-box").classList.remove("hidden");
 
   } else {
-    log("LEVEL 4 (STEP 1) FAILED: Master Number incorrect.", "err");
+    log(`LEVEL 4 (STEP 1) FAILED: Incorrect master guess -> [${masterNum}]`, "err");
   }
 }
 
 async function submitLevel4Step2() {
+  if (activeLevel !== 4) {
+    triggerSecurityCountermeasure("Level 4 Step 2 Bypass", "Unauthorized 2FA submission.");
+    return;
+  }
+
   const tokenInput = document.getElementById("lvl4-2fa-input").value;
   if (!tokenInput) return log("Enter 2FA Code!", "err");
 
@@ -202,6 +249,15 @@ async function submitLevel4Step2() {
     sendAppsScriptRequest({ action: "breach_notification", level: "Level 4 (FINAL COMPLETE)" });
 
   } else {
-    log("LEVEL 4 (STEP 2) FAILED: Invalid 2FA token.", "err");
+    log(`LEVEL 4 (STEP 2) FAILED: Invalid 2FA token -> [${tokenInput}]`, "err");
   }
 }
+
+// ==========================================
+// TAMPER-PROOF WATCHDOG (Freezes functions if overwritten)
+// ==========================================
+Object.freeze(submitLevel1);
+Object.freeze(submitLevel2);
+Object.freeze(submitLevel3);
+Object.freeze(submitLevel4Step1);
+Object.freeze(submitLevel4Step2);
