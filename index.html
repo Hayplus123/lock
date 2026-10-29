@@ -43,7 +43,7 @@
       text-align: center;
     }
 
-    /* Level Progress Indicator */
+    /* Level Progress Indicator (Only Levels 1-4 initially) */
     .progress-bar {
       display: flex;
       gap: 8px;
@@ -267,13 +267,12 @@
   <h1>CYBER LOCK SYSTEM</h1>
   <div class="subtitle">Sequential Hacking Challenge v3.0</div>
 
-  <!-- Progress Bar (Level 5 hidden initially) -->
-  <div class="progress-bar">
+  <!-- Progress Bar (Only 1-4 exist initially) -->
+  <div class="progress-bar" id="progress-bar">
     <div id="step-1" class="step active">LVL 1</div>
     <div id="step-2" class="step">LVL 2</div>
     <div id="step-3" class="step">LVL 3</div>
     <div id="step-4" class="step">LVL 4</div>
-    <div id="step-5" class="step hidden">LVL 5</div>
   </div>
 
   <!-- Main Active Lock Area -->
@@ -343,7 +342,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Console Log Terminal -->
     <div id="console" class="console-log">
       > SYSTEM INITIALIZED. AWAITING LEVEL 1 CRACK...
@@ -351,9 +350,7 @@
 
   </div>
 
-  <script src="script.js"></script>
-</body>
-<!-- Sound Effects -->
+  <!-- Audio Elements -->
   <audio id="snd-click" src="click.mp3" preload="auto"></audio>
   <audio id="snd-success" src="success.mp3" preload="auto"></audio>
   <audio id="snd-error" src="error.mp3" preload="auto"></audio>
@@ -361,5 +358,4 @@
 
   <script src="script.js"></script>
 </body>
-</html>
 </html>
