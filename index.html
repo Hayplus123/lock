@@ -25,6 +25,7 @@
       align-items: center;
       min-height: 100vh;
       padding: 20px;
+      transition: background 0.5s;
     }
 
     h1 {
@@ -45,19 +46,19 @@
     /* Level Progress Indicator */
     .progress-bar {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       margin-bottom: 30px;
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
     }
 
     .step {
       flex: 1;
-      padding: 10px;
+      padding: 10px 5px;
       background: var(--card-bg);
       border: 1px solid #1a2638;
       text-align: center;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--text-dim);
       border-radius: 4px;
       transition: all 0.3s;
@@ -85,6 +86,7 @@
       max-width: 500px;
       box-shadow: 0 0 20px rgba(0,0,0,0.8);
       position: relative;
+      transition: border-color 0.3s;
     }
 
     .lock-header {
@@ -161,7 +163,7 @@
       text-align: center;
     }
 
-    /* Text Inputs (Level 2, 3, 4) */
+    /* Text Inputs */
     .input-group {
       display: flex;
       flex-direction: column;
@@ -204,15 +206,41 @@
       box-shadow: 0 0 12px rgba(0, 243, 255, 0.5);
     }
 
-    /* Pop Lock Animation Effect */
+    /* Pop Animation */
     @keyframes popLock {
       0% { transform: scale(1); }
       50% { transform: scale(1.08); border-color: var(--neon-green); }
       100% { transform: scale(1); }
     }
+    .pop-animation { animation: popLock 0.4s ease-out; }
 
-    .pop-animation {
-      animation: popLock 0.4s ease-out;
+    /* Siren Flash Alarm Animation */
+    @keyframes sirenFlash {
+      0% { background-color: rgba(255, 0, 85, 0.05); border-color: var(--neon-red); box-shadow: 0 0 30px rgba(255, 0, 85, 0.6); }
+      50% { background-color: rgba(0, 243, 255, 0.05); border-color: var(--neon-cyan); box-shadow: 0 0 30px rgba(0, 243, 255, 0.6); }
+      100% { background-color: rgba(255, 0, 85, 0.05); border-color: var(--neon-red); box-shadow: 0 0 30px rgba(255, 0, 85, 0.6); }
+    }
+    .siren-active {
+      animation: sirenFlash 0.8s infinite alternate;
+    }
+
+    /* Victory Screen */
+    .victory-screen {
+      text-align: center;
+      padding: 20px;
+    }
+    .victory-screen h2 {
+      color: var(--neon-green);
+      font-size: 1.5rem;
+      text-shadow: 0 0 15px var(--neon-green);
+      margin-bottom: 15px;
+      animation: popLock 1s infinite;
+    }
+    .victory-screen p {
+      color: #fff;
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      line-height: 1.6;
     }
 
     /* Terminal Console */
@@ -228,7 +256,6 @@
       max-height: 100px;
       overflow-y: auto;
     }
-
     .console-log .err { color: var(--neon-red); }
     .console-log .success { color: var(--neon-green); }
 
@@ -238,14 +265,15 @@
 <body>
 
   <h1>CYBER LOCK SYSTEM</h1>
-  <div class="subtitle">Sequential Hacking Challenge v2.0</div>
+  <div class="subtitle">Sequential Hacking Challenge v3.0</div>
 
-  <!-- Progress Bar -->
+  <!-- Progress Bar (Level 5 hidden initially) -->
   <div class="progress-bar">
-    <div id="step-1" class="step active">LVL 1: DIAL</div>
-    <div id="step-2" class="step">LVL 2: PASS</div>
-    <div id="step-3" class="step">LVL 3: NUM</div>
-    <div id="step-4" class="step">LVL 4: 2FA</div>
+    <div id="step-1" class="step active">LVL 1</div>
+    <div id="step-2" class="step">LVL 2</div>
+    <div id="step-3" class="step">LVL 3</div>
+    <div id="step-4" class="step">LVL 4</div>
+    <div id="step-5" class="step hidden">LVL 5</div>
   </div>
 
   <!-- Main Active Lock Area -->
@@ -260,39 +288,21 @@
       <p class="instruction">Inspect JS source code or brute force the 4-digit combination.</p>
       
       <div class="dial-container">
-        <div class="dial">
-          <button onclick="changeDial(0, 1)">▲</button>
-          <div id="dial-0" class="dial-val">0</div>
-          <button onclick="changeDial(0, -1)">▼</button>
-        </div>
-        <div class="dial">
-          <button onclick="changeDial(1, 1)">▲</button>
-          <div id="dial-1" class="dial-val">0</div>
-          <button onclick="changeDial(1, -1)">▼</button>
-        </div>
-        <div class="dial">
-          <button onclick="changeDial(2, 1)">▲</button>
-          <div id="dial-2" class="dial-val">0</div>
-          <button onclick="changeDial(2, -1)">▼</button>
-        </div>
-        <div class="dial">
-          <button onclick="changeDial(3, 1)">▲</button>
-          <div id="dial-3" class="dial-val">0</div>
-          <button onclick="changeDial(3, -1)">▼</button>
-        </div>
+        <div class="dial"><button onclick="changeDial(0, 1)">▲</button><div id="dial-0" class="dial-val">0</div><button onclick="changeDial(0, -1)">▼</button></div>
+        <div class="dial"><button onclick="changeDial(1, 1)">▲</button><div id="dial-1" class="dial-val">0</div><button onclick="changeDial(1, -1)">▼</button></div>
+        <div class="dial"><button onclick="changeDial(2, 1)">▲</button><div id="dial-2" class="dial-val">0</div><button onclick="changeDial(2, -1)">▼</button></div>
+        <div class="dial"><button onclick="changeDial(3, 1)">▲</button><div id="dial-3" class="dial-val">0</div><button onclick="changeDial(3, -1)">▼</button></div>
       </div>
-
       <button class="btn-submit" style="width: 100%;" onclick="submitLevel1()">CRACK LEVEL 1</button>
     </div>
 
     <!-- LEVEL 2 UI -->
     <div id="lvl2-container" class="hidden">
       <div class="lock-header">
-        <span class="lock-title">LEVEL 2: Hidden Endpoint Password</span>
+        <span class="lock-title">LEVEL 2: Hidden Password</span>
         <span class="status-badge" id="lvl2-badge">LOCKED</span>
       </div>
-      <p class="instruction">Password is fetched from server-side JSON config. Intercept the network request!</p>
-      
+      <p class="instruction">Password is obfuscated in source code. Intercept or decode it!</p>
       <div class="input-group">
         <input type="password" id="lvl2-input" placeholder="ENTER PASSWORD..." autocomplete="off"/>
         <button class="btn-submit" onclick="submitLevel2()">SUBMIT PASSWORD</button>
@@ -302,11 +312,10 @@
     <!-- LEVEL 3 UI -->
     <div id="lvl3-container" class="hidden">
       <div class="lock-header">
-        <span class="lock-title">LEVEL 3: AppScript Cloud Vault</span>
+        <span class="lock-title">LEVEL 3: Cloud Vault Target</span>
         <span class="status-badge" id="lvl3-badge">LOCKED</span>
       </div>
-      <p class="instruction">Target number (1-10000) is stored in the remote Google Spreadsheet. Send payload query!</p>
-      
+      <p class="instruction">Target number (1-10000) stored in the remote Google Sheet.</p>
       <div class="input-group">
         <input type="text" id="lvl3-input" placeholder="GUESS (1 - 10000)" autocomplete="off"/>
         <button class="btn-submit" onclick="submitLevel3()">AUTHENTICATE GUESS</button>
@@ -316,28 +325,41 @@
     <!-- LEVEL 4 UI -->
     <div id="lvl4-container" class="hidden">
       <div class="lock-header">
-        <span class="lock-title">LEVEL 4: Double Spreadsheet 2FA</span>
+        <span class="lock-title">LEVEL 4: Double Sheet 2FA</span>
         <span class="status-badge" id="lvl4-badge">LOCKED</span>
       </div>
-      
-      <!-- Step 1: Guess Number -->
       <div id="lvl4-step1-box">
-        <p class="instruction">Part 1: Crack master target (1-100000) stored in main spreadsheet.</p>
+        <p class="instruction">Part 1: Crack master target (1-100000) in main spreadsheet.</p>
         <div class="input-group">
           <input type="text" id="lvl4-num-input" placeholder="MASTER NUM (1-100000)" autocomplete="off"/>
           <button class="btn-submit" onclick="submitLevel4Step1()">VERIFY MASTER NUM</button>
         </div>
       </div>
-
-      <!-- Step 2: 2FA Verification (Initially hidden) -->
       <div id="lvl4-step2-box" class="hidden">
-        <p class="instruction" style="color: var(--neon-yellow);">
-          ⚠️ MASTER NUMBER ACCEPTED! A random 2FA letter code was generated and logged to the 2FA Verification Spreadsheet.
-        </p>
+        <p class="instruction" style="color: var(--neon-yellow);">⚠️ MASTER ACCEPTED! 2FA verification code logged to Verification Spreadsheet.</p>
         <div class="input-group">
-          <input type="text" id="lvl4-2fa-input" placeholder="ENTER 2FA LETTER CODE" autocomplete="off"/>
-          <button class="btn-submit" onclick="submitLevel4Step2()">CRACK FINAL LOCK</button>
+          <input type="text" id="lvl4-2fa-input" placeholder="ENTER 2FA CODE" autocomplete="off"/>
+          <button class="btn-submit" onclick="submitLevel4Step2()">CRACK LEVEL 4</button>
         </div>
+      </div>
+    </div>
+
+    <!-- LEVEL 5 UI (SECRET FINAL STAND) -->
+    <div id="lvl5-container" class="hidden">
+      <div class="lock-header">
+        <span class="lock-title" style="color: var(--neon-red);">⚠️ LEVEL 5: THE FINAL STAND ⚠️</span>
+        <span class="status-badge" id="lvl5-badge">ACTIVE</span>
+      </div>
+      <p class="instruction">SECRET LEVEL UNLOCKED! A 10-character alphanumeric final code was generated and stored in the 2FA Spreadsheet. Infiltrate it to trigger sirens!</p>
+      
+      <div class="input-group">
+        <input type="text" id="lvl5-input" placeholder="10-CHAR FINAL CODE" autocomplete="off"/>
+        <button class="btn-submit" style="background: var(--neon-red); color: #fff;" onclick="submitLevel5()">BREACH FINAL STAND</button>
+      </div>
+
+      <div id="victory-box" class="victory-screen hidden">
+        <h2>🚨 SIRENS BLAZING 🚨</h2>
+        <p>YOU HAVE INFILTRATED THE SYSTEM</p>
       </div>
     </div>
 
