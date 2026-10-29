@@ -17,6 +17,7 @@ function triggerPop() {
   card.classList.remove("pop-animation");
   void card.offsetWidth;
   card.classList.add("pop-animation");
+  playSound("snd-success");
 }
 
 function setStepState(levelNum, state) {
@@ -50,6 +51,7 @@ async function sendAppsScriptRequest(actionData) {
 async function triggerDemotionPenalty(reason) {
   log(`🚨 SECURITY BREACH: ${reason}. DEMOTING USER!`, "err");
   await sendAppsScriptRequest({ action: "demote_penalty", reason: reason });
+  playSound("snd-error");
 
   if (activeLevel > 1) activeLevel--;
 
@@ -249,9 +251,27 @@ async function submitLevel5() {
 
     log("🚨 SYSTEM FULLY INFILTRATED! SIRENS ACTIVE!", "success");
     sendAppsScriptRequest({ action: "breach_notification", level: "Level 5 (FINAL STAND COMPLETE)" });
+    playSound("snd-siren"); // Starts playing siren.mp3 on loop
   } else {
     log(`LEVEL 5 FAILED: Invalid Final Code -> [${codeInput}]`, "err");
   }
+}
+
+// Sound Effect Helper
+function playSound(soundId) {
+  try {
+    const sound = document.getElementById(soundId);
+    if (sound) {
+      sound.currentTime = 0; // Rewind to start
+      sound.play().catch(e => console.log("Audio play blocked by browser policy until interaction."));
+    }
+  } catch (err) {}
+}
+
+function changeDial(index, delta) {
+  currentDials[index] = (currentDials[index] + delta + 10) % 10;
+  document.getElementById(`dial-${index}`).innerText = currentDials[index];
+  playSound("snd-click"); // Play click sound
 }
 
 Object.freeze(submitLevel1);
