@@ -170,7 +170,7 @@ function triggerHackerPenalty(reason) {
     mainSheet.getRange("B2").setValue(newLvl3Target);
     mainSheet.getRange("B3").setValue(newLvl4Target);
 
-    // Log the security breach in Sheet1 audit trail
+    // Log the security breach in Sheet1 audit trail.
     logToSheet("Sheet1", [new Date(), "🚨 HACKER PENALTY TRIGGERED", reason]);
 
     // Dispatch emergency alert email to your inbox
