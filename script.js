@@ -162,7 +162,6 @@ async function startHackingAttempt() {
   playSound("snd-success");
   log("INITIALIZING HACKING SEQUENCE... CONTACTING REMOTE MAINFRAME...", "success");
 
-  // Fires backend request to log intrusion and issue session token
   const response = await sendAppsScriptRequest({ action: "start_session" });
   
   if (response && response.sessionToken) {

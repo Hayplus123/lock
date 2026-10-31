@@ -28,7 +28,6 @@
       transition: background 0.5s;
     }
 
-    /* Cyberpunk Mouse Spotlight / Radar Glow */
     body::after {
       content: "";
       position: fixed;
@@ -53,7 +52,6 @@
       text-align: center;
     }
 
-    /* Level Progress Indicator */
     .progress-bar {
       display: flex;
       gap: 8px;
@@ -86,7 +84,6 @@
       background: rgba(0, 255, 102, 0.05);
     }
 
-    /* Main Container */
     .lock-card {
       background: var(--card-bg);
       border: 1px solid #1a2638;
@@ -96,7 +93,6 @@
       max-width: 500px;
       box-shadow: 0 0 20px rgba(0,0,0,0.8);
       position: relative;
-      transition: border-color 0.3s;
     }
 
     .lock-header {
@@ -134,7 +130,6 @@
       line-height: 1.4;
     }
 
-    /* Combination Lock UI (Level 1) */
     .dial-container {
       display: flex;
       justify-content: center;
@@ -173,7 +168,6 @@
       text-align: center;
     }
 
-    /* Text Inputs */
     .input-group {
       display: flex;
       flex-direction: column;
@@ -216,7 +210,6 @@
       box-shadow: 0 0 12px rgba(0, 243, 255, 0.5);
     }
 
-    /* Animations */
     @keyframes popLock {
       0% { transform: scale(1); }
       50% { transform: scale(1.08); border-color: var(--neon-green); }
@@ -231,7 +224,6 @@
     }
     .siren-active { animation: sirenFlash 0.8s infinite alternate; }
 
-    /* Victory Screen */
     .victory-screen {
       text-align: center;
       padding: 20px;
@@ -250,7 +242,6 @@
       line-height: 1.6;
     }
 
-    /* Terminal Console */
     .console-log {
       margin-top: 25px;
       background: #05070a;
@@ -274,7 +265,6 @@
   <h1>CYBER LOCK SYSTEM</h1>
   <div class="subtitle">Sequential Hacking Challenge v3.0</div>
 
-  <!-- Progress Bar -->
   <div class="progress-bar" id="progress-bar">
     <div id="step-1" class="step active">LVL 1</div>
     <div id="step-2" class="step">LVL 2</div>
@@ -282,10 +272,9 @@
     <div id="step-4" class="step">LVL 4</div>
   </div>
 
-  <!-- Main Active Lock Area -->
   <div id="lock-card" class="lock-card">
 
-    <!-- START GATE CONTAINER -->
+    <!-- START GATE -->
     <div id="start-gate-container" style="text-align: center; padding: 20px 0;">
       <div class="lock-header">
         <span class="lock-title" style="color: var(--neon-cyan);">INITIALIZE CONNECTION</span>
@@ -295,7 +284,7 @@
       <button class="btn-submit" style="width: 100%; background: var(--neon-green); color: #000;" onclick="startHackingAttempt()">🚨 START HACKING</button>
     </div>
 
-    <!-- LEVEL 1 UI (Hidden until Start Hacking is clicked) -->
+    <!-- LEVEL 1 -->
     <div id="lvl1-container" class="hidden">
       <div class="lock-header">
         <span class="lock-title">LEVEL 1: 4-Digit Combination</span>
@@ -312,7 +301,7 @@
       <button class="btn-submit" style="width: 100%;" onclick="submitLevel1()">CRACK LEVEL 1</button>
     </div>
 
-    <!-- LEVEL 2 UI -->
+    <!-- LEVEL 2 -->
     <div id="lvl2-container" class="hidden">
       <div class="lock-header">
         <span class="lock-title">LEVEL 2: Hidden Password</span>
@@ -325,7 +314,7 @@
       </div>
     </div>
 
-    <!-- LEVEL 3 UI -->
+    <!-- LEVEL 3 -->
     <div id="lvl3-container" class="hidden">
       <div class="lock-header">
         <span class="lock-title">LEVEL 3: Cloud Vault Target</span>
@@ -338,7 +327,7 @@
       </div>
     </div>
 
-    <!-- LEVEL 4 UI -->
+    <!-- LEVEL 4 -->
     <div id="lvl4-container" class="hidden">
       <div class="lock-header">
         <span class="lock-title">LEVEL 4: Double Sheet 2FA</span>
@@ -348,4 +337,29 @@
         <p class="instruction">Part 1: Crack master target (1-100000) in main spreadsheet.</p>
         <div class="input-group">
           <input type="text" id="lvl4-num-input" placeholder="MASTER NUM (1-100000)" autocomplete="off"/>
-          <button
+          <button class="btn-submit" onclick="submitLevel4Step1()">VERIFY MASTER NUM</button>
+        </div>
+      </div>
+      <div id="lvl4-step2-box" class="hidden">
+        <p class="instruction" style="color: var(--neon-yellow);">⚠️ MASTER ACCEPTED! 2FA verification code logged to Verification Spreadsheet.</p>
+        <div class="input-group">
+          <input type="text" id="lvl4-2fa-input" placeholder="ENTER 2FA CODE" autocomplete="off"/>
+          <button class="btn-submit" onclick="submitLevel4Step2()">CRACK LEVEL 4</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="console" class="console-log">
+      > AWAITING USER INITIATION... PRESS 'START HACKING'.
+    </div>
+
+  </div>
+
+  <audio id="snd-click" src="click.mp3" preload="auto"></audio>
+  <audio id="snd-success" src="success.mp3" preload="auto"></audio>
+  <audio id="snd-error" src="error.mp3" preload="auto"></audio>
+  <audio id="snd-siren" src="siren.mp3" preload="auto" loop></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
