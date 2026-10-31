@@ -41,6 +41,18 @@ window.addEventListener('mousemove', (e) => {
   mouseTelemetry.lastMoveTime = now;
 });
 
+// ⏱️ ADD THE 5-MINUTE IDLE TIMER RIGHT HERE:
+const IDLE_LIMIT_MS = 5 * 60 * 1000; // 5 minutes
+
+setInterval(() => {
+  const timeSinceLastMove = Date.now() - mouseTelemetry.lastMoveTime;
+  
+  // If an active session is running and they've been completely still for 5 mins
+  if (sessionToken && timeSinceLastMove > IDLE_LIMIT_MS) {
+    triggerHackerTrap("Session terminated due to 5 minutes of inactivity / idle timeout.");
+  }
+}, 10000); // Check every 10 seconds
+
 function verifyMouseBehavior() {
   if (mouseTelemetry.totalDistance < 10) {
     console.warn("[-] BOT TRAP: Zero mouse movement detected!");
