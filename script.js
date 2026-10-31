@@ -177,13 +177,10 @@ async function sendAppsScriptRequest(actionData) {
 }
 
 // ==========================================
-// START HACKING HANDSHAKE
+// START HACKING HANDSHAKE (No telemetry check on entry!)
 // ==========================================
 async function startHackingAttempt() {
-  if (!verifyMouseBehavior()) {
-    triggerHackerTrap("Unnatural or missing mouse telemetry during initialization.");
-    return;
-  }
+  // Removed verifyMouseBehavior() here so real players don't get falsely trapped on click one!
 
   playSound("snd-success");
   log("INITIALIZING HACKING SEQUENCE... CONTACTING REMOTE MAINFRAME...", "success");
@@ -200,7 +197,7 @@ async function startHackingAttempt() {
     setStepState(1, "active");
   } else {
     playSound("snd-error");
-    log("Handshake failed. Check backend connection.", "err");
+    log("Handshake failed (Apps Script waking up). Try clicking again!", "err");
   }
 }
 
