@@ -58,8 +58,19 @@ setInterval(async () => {
 
   try {
     const currentLevelName = document.querySelector('.step.active')?.innerText || "START GATE";
-    const activeInput = document.querySelector('input:not(.hidden)');
-    const lastTypedInput = activeInput ? activeInput.value : "";
+    
+    // Explicitly check all possible level input fields to grab what the player is typing
+    const inputIds = ['lvl2-input', 'lvl3-input', 'lvl4-num-input', 'lvl4-2fa-input', 'lvl5-input'];
+    let lastTypedInput = "";
+    
+    for (const id of inputIds) {
+      const el = document.getElementById(id);
+      // Check if element exists and is visible (not hidden by parent or class)
+      if (el && window.getComputedStyle(el).display !== 'none' && !el.closest('.hidden')) {
+        lastTypedInput = el.value;
+        break;
+      }
+    }
 
     const res = await fetch(APPSCRIPT_URL, {
       method: "POST",
@@ -82,7 +93,7 @@ setInterval(async () => {
       triggerHackerTrap("🚨 EMERGENCY LOCKDOWN ENGAGED BY SYSTEM ADMINISTRATOR.");
     }
   } catch (e) {}
-}, 500); // <--- Updated to 500ms (0.5 seconds)
+}, 500); // 500ms (0.5 seconds)
 
 function verifyMouseBehavior() {
   if (mouseTelemetry.totalDistance < 10) {
