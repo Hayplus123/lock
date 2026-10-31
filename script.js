@@ -50,13 +50,43 @@ setInterval(() => {
   }
 }, 10000);
 
+// ==========================================
+// 📡 ADMIN TELEMETRY & EMERGENCY LOCKDOWN SYNC
+// ==========================================
+setInterval(async () => {
+  if (!sessionToken) return;
+
+  try {
+    const currentLevelName = document.querySelector('.step.active')?.innerText || "START GATE";
+    const activeInput = document.querySelector('input:not(.hidden)');
+    const lastTypedInput = activeInput ? activeInput.value : "";
+
+    const res = await fetch(APPSCRIPT_URL, {
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({
+        action: "update_telemetry",
+        sessionToken: sessionToken,
+        mouseX: Math.round((mouseTelemetry.lastX / window.innerWidth) * 100) || 0,
+        mouseY: Math.round((mouseTelemetry.lastY / window.innerHeight) * 100) || 0,
+        level: currentLevelName,
+        lastInput: lastTypedInput
+      })
+    });
+    
+    const data = await res.json();
+    
+    // If you click Emergency Lockdown on your admin page, this instantly traps the player!
+    if (data.lockdown) {
+      triggerHackerTrap("🚨 EMERGENCY LOCKDOWN ENGAGED BY SYSTEM ADMINISTRATOR.");
+    }
+  } catch (e) {}
+}, 3000);
+
 function verifyMouseBehavior() {
   if (mouseTelemetry.totalDistance < 10) {
     console.warn("[-] BOT TRAP: Zero mouse movement detected!");
-    return false;
-  }
-  if (mouseTelemetry.jitterCount > 50 && mouseTelemetry.totalDistance < 100) {
-    console.warn("[-] BOT TRAP: Artificial mouse jitter detected!");
     return false;
   }
   return true;
@@ -68,7 +98,6 @@ function verifyMouseBehavior() {
 function triggerHackerTrap(reason = "Automated script signature detected.") {
   playSound("snd-error");
   
-  // Ping backend to send email alert for cheating / idle timeout kickout
   fetch(APPSCRIPT_URL, {
     method: "POST",
     mode: "cors",
@@ -93,9 +122,9 @@ function triggerHackerTrap(reason = "Automated script signature detected.") {
       box-shadow: inset 0 0 50px rgba(255, 0, 85, 0.5);
     ">
       <h1 style="font-size: 2.5rem; text-shadow: 0 0 20px #ff0055; margin-bottom: 20px;">🚨 HONEYPOT TRAP ACTIVATED 🚨</h1>
-      <p style="color: #00f3ff; font-size: 1.2rem; margin-bottom: 10px;">> ACCESS DENIED: BOT / IDLE SIGNATURE CONFIRMED</p>
+      <p style="color: #00f3ff; font-size: 1.2rem; margin-bottom: 10px;">> ACCESS DENIED: BOT / IDLE / LOCKDOWN SIGNATURE CONFIRMED</p>
       <p style="color: #8a9bb8; font-size: 0.9rem; max-width: 600px; margin-bottom: 30px;">Reason: ${reason}</p>
-      <p style="color: #ffcc00; font-size: 1rem;">[!] Email alert dispatched. Flushing session and resetting to Level 1...</p>
+      <p style="color: #ffcc00; font-size: 1rem;">[!] Flushing session and resetting...</p>
     </div>
   `;
 
@@ -161,23 +190,11 @@ async function sendAppsScriptRequest(actionData) {
       body: JSON.stringify(actionData)
     });
     
-    const rawText = await response.text();
-    console.log("[*] Raw response from Apps Script:", rawText); // Check what prints here!
-    
-    try {
-      const data = JSON.parse(rawText);
-      if (data.penalty) {
-        triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
-      }
-      return data;
-    } catch (jsonErr) {
-      // If Apps Script successfully logged to the sheet, let's fake a successful session return if it's action == "start_session"
-      if (actionData.action === "start_session") {
-        console.warn("[!] Intercepted non-JSON response on start_session, but sheet logged it. Forcing session recovery...");
-        return { sessionToken: "recovered_session_" + Math.random(), status: "success" };
-      }
-      return { status: "error", correct: false };
+    const data = await response.json();
+    if (data.penalty) {
+      triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
     }
+    return data;
   } catch (err) {
     log("AppScript Connection Error: " + err.message, "err");
     return { status: "error", correct: false };
@@ -185,11 +202,9 @@ async function sendAppsScriptRequest(actionData) {
 }
 
 // ==========================================
-// START HACKING HANDSHAKE (No telemetry check on entry!)
+// GAMEPLAY LOGIC (LEVELS 1 - 5)
 // ==========================================
 async function startHackingAttempt() {
-  // Removed verifyMouseBehavior() here so real players don't get falsely trapped on click one!
-
   playSound("snd-success");
   log("INITIALIZING HACKING SEQUENCE... CONTACTING REMOTE MAINFRAME...", "success");
 
@@ -205,13 +220,10 @@ async function startHackingAttempt() {
     setStepState(1, "active");
   } else {
     playSound("snd-error");
-    log("Handshake failed (Apps Script waking up). Try clicking again!", "err");
+    log("Handshake failed. Check backend connection.", "err");
   }
 }
 
-// ==========================================
-// LEVEL 1 LOGIC
-// ==========================================
 function changeDial(index, delta) {
   currentDials[index] = (currentDials[index] + delta + 10) % 10;
   document.getElementById(`dial-${index}`).innerText = currentDials[index];
@@ -219,18 +231,13 @@ function changeDial(index, delta) {
 }
 
 async function submitLevel1() {
-  if (!verifyMouseBehavior()) {
-    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 1.");
-    return;
-  }
-
   const isCorrect = currentDials.every((val, idx) => val === LEVEL1_COMBO[idx]);
   if (isCorrect) {
     triggerPop();
     playSound("snd-success");
     log("LEVEL 1 CRACKED! Notifying mainframe...", "success");
 
-    const response = await sendAppsScriptRequest({ action: "complete_level1" });
+    await sendAppsScriptRequest({ action: "complete_level1" });
 
     document.getElementById("lvl1-badge").innerText = "UNLOCKED";
     document.getElementById("lvl1-badge").classList.add("unlocked");
@@ -248,15 +255,7 @@ async function submitLevel1() {
   }
 }
 
-// ==========================================
-// LEVEL 2 LOGIC
-// ==========================================
 async function submitLevel2() {
-  if (!verifyMouseBehavior()) {
-    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 2.");
-    return;
-  }
-
   const inputPw = document.getElementById("lvl2-input").value;
   if (!inputPw) return log("Enter a password!", "err");
 
@@ -279,21 +278,10 @@ async function submitLevel2() {
   } else {
     playSound("snd-error");
     log(`LEVEL 2 FAILED -> [${inputPw}]`, "err");
-    if (response.penalty) {
-      triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
-    }
   }
 }
 
-// ==========================================
-// LEVEL 3 LOGIC
-// ==========================================
 async function submitLevel3() {
-  if (!verifyMouseBehavior()) {
-    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 3.");
-    return;
-  }
-
   const guess = document.getElementById("lvl3-input").value;
   if (!guess) return log("Enter a guess first!", "err");
 
@@ -316,21 +304,10 @@ async function submitLevel3() {
   } else {
     playSound("snd-error");
     log(`LEVEL 3 FAILED -> [${guess}]`, "err");
-    if (response.penalty) {
-      triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
-    }
   }
 }
 
-// ==========================================
-// LEVEL 4 LOGIC
-// ==========================================
 async function submitLevel4Step1() {
-  if (!verifyMouseBehavior()) {
-    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 4 Step 1.");
-    return;
-  }
-
   const masterNum = document.getElementById("lvl4-num-input").value;
   if (!masterNum) return log("Enter Master Number!", "err");
 
@@ -344,18 +321,10 @@ async function submitLevel4Step1() {
   } else {
     playSound("snd-error");
     log(`LEVEL 4 (STEP 1) FAILED -> [${masterNum}]`, "err");
-    if (response.penalty) {
-      triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
-    }
   }
 }
 
 async function submitLevel4Step2() {
-  if (!verifyMouseBehavior()) {
-    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 4 Step 2.");
-    return;
-  }
-
   const tokenInput = document.getElementById("lvl4-2fa-input").value;
   if (!tokenInput) return log("Enter 2FA Code!", "err");
 
@@ -400,21 +369,10 @@ async function submitLevel4Step2() {
   } else {
     playSound("snd-error");
     log(`LEVEL 4 (STEP 2) FAILED -> [${tokenInput}]`, "err");
-    if (response.penalty) {
-      triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
-    }
   }
 }
 
-// ==========================================
-// LEVEL 5 LOGIC
-// ==========================================
 async function submitLevel5() {
-  if (!verifyMouseBehavior()) {
-    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 5 Final Stand.");
-    return;
-  }
-
   const codeInput = document.getElementById("lvl5-input").value;
   if (!codeInput) return log("Enter the 10-char final code!", "err");
 
@@ -435,8 +393,5 @@ async function submitLevel5() {
   } else {
     playSound("snd-error");
     log(`LEVEL 5 FAILED: Invalid Final Code -> [${codeInput}]`, "err");
-    if (response.penalty) {
-      triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
-    }
   }
 }
