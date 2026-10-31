@@ -51,7 +51,7 @@ setInterval(() => {
 }, 10000);
 
 // ==========================================
-// 📡 ADMIN TELEMETRY & EMERGENCY LOCKDOWN SYNC
+// 📡 ADMIN TELEMETRY & EMERGENCY LOCKDOWN SYNC (0.5 sec speed)
 // ==========================================
 setInterval(async () => {
   if (!sessionToken) return;
@@ -82,7 +82,7 @@ setInterval(async () => {
       triggerHackerTrap("🚨 EMERGENCY LOCKDOWN ENGAGED BY SYSTEM ADMINISTRATOR.");
     }
   } catch (e) {}
-}, 3000);
+}, 500); // <--- Updated to 500ms (0.5 seconds)
 
 function verifyMouseBehavior() {
   if (mouseTelemetry.totalDistance < 10) {
