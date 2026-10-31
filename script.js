@@ -160,7 +160,16 @@ async function sendAppsScriptRequest(actionData) {
       headers: { "Content-Type": "text/plain" },
       body: JSON.stringify(actionData)
     });
-    return await response.json();
+    
+    const data = await response.json();
+
+    // 🚨 INSTANT PENALTY INTERCEPTOR:
+    // If the server flags a rate limit or penalty, trap them immediately!
+    if (data.penalty) {
+      triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
+    }
+
+    return data;
   } catch (err) {
     log("AppScript Connection Error: " + err.message, "err");
     return { status: "error", correct: false };
