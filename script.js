@@ -161,15 +161,20 @@ async function sendAppsScriptRequest(actionData) {
       body: JSON.stringify(actionData)
     });
     
-    const data = await response.json();
-
-    // 🚨 INSTANT PENALTY INTERCEPTOR:
-    // If the server flags a rate limit or penalty, trap them immediately!
-    if (data.penalty) {
-      triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
+    const rawText = await response.text();
+    
+    try {
+      const data = JSON.parse(rawText);
+      if (data.penalty) {
+        triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
+      }
+      return data;
+    } catch (jsonErr) {
+      // This will print the exact HTML error or login page Google is sending back!
+      console.error("[-] Apps Script returned non-JSON text:", rawText);
+      log("Server returned HTML/Error instead of JSON. Check deployment access.", "err");
+      return { status: "error", correct: false };
     }
-
-    return data;
   } catch (err) {
     log("AppScript Connection Error: " + err.message, "err");
     return { status: "error", correct: false };
