@@ -285,8 +285,18 @@
   <!-- Main Active Lock Area -->
   <div id="lock-card" class="lock-card">
 
-    <!-- LEVEL 1 UI -->
-    <div id="lvl1-container">
+    <!-- START GATE CONTAINER -->
+    <div id="start-gate-container" style="text-align: center; padding: 20px 0;">
+      <div class="lock-header">
+        <span class="lock-title" style="color: var(--neon-cyan);">INITIALIZE CONNECTION</span>
+        <span class="status-badge">SECURE GATE</span>
+      </div>
+      <p class="instruction" style="margin-bottom: 25px;">Ready to test your skills against the multi-tier security mainframe? Click below to initiate session handshake.</p>
+      <button class="btn-submit" style="width: 100%; background: var(--neon-green); color: #000;" onclick="startHackingAttempt()">🚨 START HACKING</button>
+    </div>
+
+    <!-- LEVEL 1 UI (Hidden until Start Hacking is clicked) -->
+    <div id="lvl1-container" class="hidden">
       <div class="lock-header">
         <span class="lock-title">LEVEL 1: 4-Digit Combination</span>
         <span class="status-badge" id="lvl1-badge">LOCKED</span>
@@ -338,31 +348,4 @@
         <p class="instruction">Part 1: Crack master target (1-100000) in main spreadsheet.</p>
         <div class="input-group">
           <input type="text" id="lvl4-num-input" placeholder="MASTER NUM (1-100000)" autocomplete="off"/>
-          <button class="btn-submit" onclick="submitLevel4Step1()">VERIFY MASTER NUM</button>
-        </div>
-      </div>
-      <div id="lvl4-step2-box" class="hidden">
-        <p class="instruction" style="color: var(--neon-yellow);">⚠️ MASTER ACCEPTED! 2FA verification code logged to Verification Spreadsheet.</p>
-        <div class="input-group">
-          <input type="text" id="lvl4-2fa-input" placeholder="ENTER 2FA CODE" autocomplete="off"/>
-          <button class="btn-submit" onclick="submitLevel4Step2()">CRACK LEVEL 4</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Console Log Terminal -->
-    <div id="console" class="console-log">
-      > SYSTEM INITIALIZED. AWAITING LEVEL 1 CRACK...
-    </div>
-
-  </div>
-
-  <!-- Audio Elements -->
-  <audio id="snd-click" src="click.mp3" preload="auto"></audio>
-  <audio id="snd-success" src="success.mp3" preload="auto"></audio>
-  <audio id="snd-error" src="error.mp3" preload="auto"></audio>
-  <audio id="snd-siren" src="siren.mp3" preload="auto" loop></audio>
-
-  <script src="script.js"></script>
-</body>
-</html>
+          <button

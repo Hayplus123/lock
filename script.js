@@ -21,7 +21,6 @@ window.addEventListener('mousemove', (e) => {
   const x = (e.clientX / window.innerWidth) * 100;
   const y = (e.clientY / window.innerHeight) * 100;
   
-  // Update Cyber Radar spotlight variables
   document.body.style.setProperty('--mouse-x', `${x}%`);
   document.body.style.setProperty('--mouse-y', `${y}%`);
 
@@ -32,7 +31,6 @@ window.addEventListener('mousemove', (e) => {
 
     mouseTelemetry.totalDistance += distance;
 
-    // Detect suspicious robotic jitter (micro-movements under 3 pixels)
     if (distance > 0 && distance < 3) {
       mouseTelemetry.jitterCount++;
     }
@@ -61,7 +59,6 @@ function verifyMouseBehavior() {
 function triggerHackerTrap(reason = "Automated script signature detected.") {
   playSound("snd-error");
   
-  // Take over the entire viewport with an inescapable red glitch prison
   document.body.innerHTML = `
     <div style="
       background-color: #080b10;
@@ -81,11 +78,10 @@ function triggerHackerTrap(reason = "Automated script signature detected.") {
       <h1 style="font-size: 2.5rem; text-shadow: 0 0 20px #ff0055; margin-bottom: 20px;">🚨 HONEYPOT TRAP ACTIVATED 🚨</h1>
       <p style="color: #00f3ff; font-size: 1.2rem; margin-bottom: 10px;">> ACCESS DENIED: BOT SIGNATURE CONFIRMED</p>
       <p style="color: #8a9bb8; font-size: 0.9rem; max-width: 600px; margin-bottom: 30px;">Reason: ${reason}</p>
-      <p style="color: #ffcc00; font-size: 1rem; animation: pulse 0.5s infinite alternate;">[!] Flushing session data, scrambling targets, and resetting to Level 1...</p>
+      <p style="color: #ffcc00; font-size: 1rem;">[!] Flushing session data, scrambling targets, and resetting to Level 1...</p>
     </div>
   `;
 
-  // Hold them hostage for 3.5 seconds to read their fate, then wipe and reload
   setTimeout(() => {
     location.reload();
   }, 3500);
@@ -155,6 +151,35 @@ async function sendAppsScriptRequest(actionData) {
 }
 
 // ==========================================
+// START HACKING HANDSHAKE
+// ==========================================
+async function startHackingAttempt() {
+  if (!verifyMouseBehavior()) {
+    triggerHackerTrap("Unnatural or missing mouse telemetry during initialization.");
+    return;
+  }
+
+  playSound("snd-success");
+  log("INITIALIZING HACKING SEQUENCE... CONTACTING REMOTE MAINFRAME...", "success");
+
+  // Fires backend request to log intrusion and issue session token
+  const response = await sendAppsScriptRequest({ action: "start_session" });
+  
+  if (response && response.sessionToken) {
+    sessionToken = response.sessionToken;
+    triggerPop();
+    log("SESSION ESTABLISHED. LEVEL 1 ENGAGED.", "success");
+
+    document.getElementById("start-gate-container").classList.add("hidden");
+    document.getElementById("lvl1-container").classList.remove("hidden");
+    setStepState(1, "active");
+  } else {
+    playSound("snd-error");
+    log("Handshake failed. Check backend connection.", "err");
+  }
+}
+
+// ==========================================
 // LEVEL 1 LOGIC
 // ==========================================
 function changeDial(index, delta) {
@@ -164,16 +189,16 @@ function changeDial(index, delta) {
 }
 
 async function submitLevel1() {
+  if (!verifyMouseBehavior()) {
+    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 1.");
+    return;
+  }
+
   const isCorrect = currentDials.every((val, idx) => val === LEVEL1_COMBO[idx]);
   if (isCorrect) {
     triggerPop();
     playSound("snd-success");
-    log("LEVEL 1 CRACKED! Requesting session token...", "success");
-
-    const response = await sendAppsScriptRequest({ action: "complete_level1" });
-    if (response && response.sessionToken) {
-      sessionToken = response.sessionToken;
-    }
+    log("LEVEL 1 CRACKED!", "success");
 
     document.getElementById("lvl1-badge").innerText = "UNLOCKED";
     document.getElementById("lvl1-badge").classList.add("unlocked");
@@ -196,7 +221,7 @@ async function submitLevel1() {
 // ==========================================
 async function submitLevel2() {
   if (!verifyMouseBehavior()) {
-    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 2 submission.");
+    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 2.");
     return;
   }
 
@@ -233,7 +258,7 @@ async function submitLevel2() {
 // ==========================================
 async function submitLevel3() {
   if (!verifyMouseBehavior()) {
-    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 3 submission.");
+    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 3.");
     return;
   }
 
