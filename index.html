@@ -28,6 +28,16 @@
       transition: background 0.5s;
     }
 
+    /* Cyberpunk Mouse Spotlight / Radar Glow */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      background: radial-gradient(circle 250px at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0, 243, 255, 0.04), transparent 80%);
+      z-index: 999;
+    }
+
     h1 {
       color: var(--neon-cyan);
       text-shadow: 0 0 10px var(--neon-cyan);

@@ -4,6 +4,64 @@ const LEVEL1_COMBO = [3, 8, 1, 4];
 let currentDials = [0, 0, 0, 0];
 let sessionToken = null;
 
+// ==========================================
+// MOUSE TELEMETRY & ANTI-BOT BEHAVIOR GUARD
+// ==========================================
+let mouseTelemetry = {
+  totalDistance: 0,
+  lastX: null,
+  lastY: null,
+  jitterCount: 0,
+  isMoving: false,
+  lastMoveTime: Date.now()
+};
+
+window.addEventListener('mousemove', (e) => {
+  const now = Date.now();
+  const x = (e.clientX / window.innerWidth) * 100;
+  const y = (e.clientY / window.innerHeight) * 100;
+  
+  // Update Cyber Radar spotlight variables
+  document.body.style.setProperty('--mouse-x', `${x}%`);
+  document.body.style.setProperty('--mouse-y', `${y}%`);
+
+  if (mouseTelemetry.lastX !== null && mouseTelemetry.lastY !== null) {
+    const dx = Math.abs(e.clientX - mouseTelemetry.lastX);
+    const dy = Math.abs(e.clientY - mouseTelemetry.lastY);
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    mouseTelemetry.totalDistance += distance;
+
+    // Detect suspicious robotic jitter (micro-movements under 3 pixels)
+    if (distance > 0 && distance < 3) {
+      mouseTelemetry.jitterCount++;
+    }
+  }
+
+  mouseTelemetry.lastX = e.clientX;
+  mouseTelemetry.lastY = e.clientY;
+  mouseTelemetry.lastMoveTime = now;
+});
+
+function verifyMouseBehavior() {
+  // If they haven't moved the mouse at all (typical of console blasting scripts)
+  if (mouseTelemetry.totalDistance < 10) {
+    console.warn("[-] BOT TRAP: Zero mouse movement detected!");
+    return false;
+  }
+
+  // If a script is doing unnatural micro-jitters in one spot
+  if (mouseTelemetry.jitterCount > 50 && mouseTelemetry.totalDistance < 100) {
+    console.warn("[-] BOT TRAP: Artificial mouse jitter detected!");
+    return false;
+  }
+
+  return true;
+}
+
+// ==========================================
+// CORE HELPERS
+// ==========================================
 function log(msg, type = "normal") {
   const c = document.getElementById("console");
   if (!c) return;
@@ -105,6 +163,13 @@ async function submitLevel1() {
 // LEVEL 2 LOGIC
 // ==========================================
 async function submitLevel2() {
+  if (!verifyMouseBehavior()) {
+    playSound("snd-error");
+    log("🚨 BOT DETECTED: Unnatural or missing mouse telemetry!", "err");
+    setTimeout(() => location.reload(), 1500);
+    return;
+  }
+
   const inputPw = document.getElementById("lvl2-input").value;
   if (!inputPw) return log("Enter a password!", "err");
 
@@ -135,6 +200,13 @@ async function submitLevel2() {
 // LEVEL 3 LOGIC
 // ==========================================
 async function submitLevel3() {
+  if (!verifyMouseBehavior()) {
+    playSound("snd-error");
+    log("🚨 BOT DETECTED: Unnatural or missing mouse telemetry!", "err");
+    setTimeout(() => location.reload(), 1500);
+    return;
+  }
+
   const guess = document.getElementById("lvl3-input").value;
   if (!guess) return log("Enter a guess first!", "err");
 
@@ -165,6 +237,13 @@ async function submitLevel3() {
 // LEVEL 4 LOGIC
 // ==========================================
 async function submitLevel4Step1() {
+  if (!verifyMouseBehavior()) {
+    playSound("snd-error");
+    log("🚨 BOT DETECTED: Unnatural or missing mouse telemetry!", "err");
+    setTimeout(() => location.reload(), 1500);
+    return;
+  }
+
   const masterNum = document.getElementById("lvl4-num-input").value;
   if (!masterNum) return log("Enter Master Number!", "err");
 
@@ -183,6 +262,13 @@ async function submitLevel4Step1() {
 }
 
 async function submitLevel4Step2() {
+  if (!verifyMouseBehavior()) {
+    playSound("snd-error");
+    log("🚨 BOT DETECTED: Unnatural or missing mouse telemetry!", "err");
+    setTimeout(() => location.reload(), 1500);
+    return;
+  }
+
   const tokenInput = document.getElementById("lvl4-2fa-input").value;
   if (!tokenInput) return log("Enter 2FA Code!", "err");
 
@@ -235,6 +321,13 @@ async function submitLevel4Step2() {
 // LEVEL 5 LOGIC
 // ==========================================
 async function submitLevel5() {
+  if (!verifyMouseBehavior()) {
+    playSound("snd-error");
+    log("🚨 BOT DETECTED: Unnatural or missing mouse telemetry!", "err");
+    setTimeout(() => location.reload(), 1500);
+    return;
+  }
+
   const codeInput = document.getElementById("lvl5-input").value;
   if (!codeInput) return log("Enter the 10-char final code!", "err");
 
