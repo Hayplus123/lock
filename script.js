@@ -41,17 +41,14 @@ window.addEventListener('mousemove', (e) => {
   mouseTelemetry.lastMoveTime = now;
 });
 
-// ⏱️ ADD THE 5-MINUTE IDLE TIMER RIGHT HERE:
-const IDLE_LIMIT_MS = 5 * 60 * 1000; // 5 minutes
-
+// ⏱️ 5-MINUTE IDLE TIMEOUT
+const IDLE_LIMIT_MS = 5 * 60 * 1000;
 setInterval(() => {
   const timeSinceLastMove = Date.now() - mouseTelemetry.lastMoveTime;
-  
-  // If an active session is running and they've been completely still for 5 mins
   if (sessionToken && timeSinceLastMove > IDLE_LIMIT_MS) {
     triggerHackerTrap("Session terminated due to 5 minutes of inactivity / idle timeout.");
   }
-}, 10000); // Check every 10 seconds
+}, 10000);
 
 function verifyMouseBehavior() {
   if (mouseTelemetry.totalDistance < 10) {
@@ -71,6 +68,14 @@ function verifyMouseBehavior() {
 function triggerHackerTrap(reason = "Automated script signature detected.") {
   playSound("snd-error");
   
+  // Ping backend to send email alert for cheating / idle timeout kickout
+  fetch(APPSCRIPT_URL, {
+    method: "POST",
+    mode: "cors",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify({ action: "report_cheat", sessionToken: sessionToken, reason: reason })
+  }).catch(e => {});
+
   document.body.innerHTML = `
     <div style="
       background-color: #080b10;
@@ -88,9 +93,9 @@ function triggerHackerTrap(reason = "Automated script signature detected.") {
       box-shadow: inset 0 0 50px rgba(255, 0, 85, 0.5);
     ">
       <h1 style="font-size: 2.5rem; text-shadow: 0 0 20px #ff0055; margin-bottom: 20px;">🚨 HONEYPOT TRAP ACTIVATED 🚨</h1>
-      <p style="color: #00f3ff; font-size: 1.2rem; margin-bottom: 10px;">> ACCESS DENIED: BOT SIGNATURE CONFIRMED</p>
+      <p style="color: #00f3ff; font-size: 1.2rem; margin-bottom: 10px;">> ACCESS DENIED: BOT / IDLE SIGNATURE CONFIRMED</p>
       <p style="color: #8a9bb8; font-size: 0.9rem; max-width: 600px; margin-bottom: 30px;">Reason: ${reason}</p>
-      <p style="color: #ffcc00; font-size: 1rem;">[!] Flushing session data, scrambling targets, and resetting to Level 1...</p>
+      <p style="color: #ffcc00; font-size: 1rem;">[!] Email alert dispatched. Flushing session and resetting to Level 1...</p>
     </div>
   `;
 
@@ -209,7 +214,9 @@ async function submitLevel1() {
   if (isCorrect) {
     triggerPop();
     playSound("snd-success");
-    log("LEVEL 1 CRACKED!", "success");
+    log("LEVEL 1 CRACKED! Notifying mainframe...", "success");
+
+    const response = await sendAppsScriptRequest({ action: "complete_level1" });
 
     document.getElementById("lvl1-badge").innerText = "UNLOCKED";
     document.getElementById("lvl1-badge").classList.add("unlocked");
