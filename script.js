@@ -44,19 +44,51 @@ window.addEventListener('mousemove', (e) => {
 });
 
 function verifyMouseBehavior() {
-  // If they haven't moved the mouse at all (typical of console blasting scripts)
   if (mouseTelemetry.totalDistance < 10) {
     console.warn("[-] BOT TRAP: Zero mouse movement detected!");
     return false;
   }
-
-  // If a script is doing unnatural micro-jitters in one spot
   if (mouseTelemetry.jitterCount > 50 && mouseTelemetry.totalDistance < 100) {
     console.warn("[-] BOT TRAP: Artificial mouse jitter detected!");
     return false;
   }
-
   return true;
+}
+
+// ==========================================
+// 😈 THE EVIL HACKER TRAP (HONEYPOT REDIRECT)
+// ==========================================
+function triggerHackerTrap(reason = "Automated script signature detected.") {
+  playSound("snd-error");
+  
+  // Take over the entire viewport with an inescapable red glitch prison
+  document.body.innerHTML = `
+    <div style="
+      background-color: #080b10;
+      color: #ff0055;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Courier New', Courier, monospace;
+      text-align: center;
+      padding: 20px;
+      border: 5px solid #ff0055;
+      box-shadow: inset 0 0 50px rgba(255, 0, 85, 0.5);
+    ">
+      <h1 style="font-size: 2.5rem; text-shadow: 0 0 20px #ff0055; margin-bottom: 20px;">🚨 HONEYPOT TRAP ACTIVATED 🚨</h1>
+      <p style="color: #00f3ff; font-size: 1.2rem; margin-bottom: 10px;">> ACCESS DENIED: BOT SIGNATURE CONFIRMED</p>
+      <p style="color: #8a9bb8; font-size: 0.9rem; max-width: 600px; margin-bottom: 30px;">Reason: ${reason}</p>
+      <p style="color: #ffcc00; font-size: 1rem; animation: pulse 0.5s infinite alternate;">[!] Flushing session data, scrambling targets, and resetting to Level 1...</p>
+    </div>
+  `;
+
+  // Hold them hostage for 3.5 seconds to read their fate, then wipe and reload
+  setTimeout(() => {
+    location.reload();
+  }, 3500);
 }
 
 // ==========================================
@@ -164,9 +196,7 @@ async function submitLevel1() {
 // ==========================================
 async function submitLevel2() {
   if (!verifyMouseBehavior()) {
-    playSound("snd-error");
-    log("🚨 BOT DETECTED: Unnatural or missing mouse telemetry!", "err");
-    setTimeout(() => location.reload(), 1500);
+    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 2 submission.");
     return;
   }
 
@@ -192,7 +222,9 @@ async function submitLevel2() {
   } else {
     playSound("snd-error");
     log(`LEVEL 2 FAILED -> [${inputPw}]`, "err");
-    if (response.penalty) location.reload();
+    if (response.penalty) {
+      triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
+    }
   }
 }
 
@@ -201,9 +233,7 @@ async function submitLevel2() {
 // ==========================================
 async function submitLevel3() {
   if (!verifyMouseBehavior()) {
-    playSound("snd-error");
-    log("🚨 BOT DETECTED: Unnatural or missing mouse telemetry!", "err");
-    setTimeout(() => location.reload(), 1500);
+    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 3 submission.");
     return;
   }
 
@@ -229,7 +259,9 @@ async function submitLevel3() {
   } else {
     playSound("snd-error");
     log(`LEVEL 3 FAILED -> [${guess}]`, "err");
-    if (response.penalty) location.reload();
+    if (response.penalty) {
+      triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
+    }
   }
 }
 
@@ -238,9 +270,7 @@ async function submitLevel3() {
 // ==========================================
 async function submitLevel4Step1() {
   if (!verifyMouseBehavior()) {
-    playSound("snd-error");
-    log("🚨 BOT DETECTED: Unnatural or missing mouse telemetry!", "err");
-    setTimeout(() => location.reload(), 1500);
+    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 4 Step 1.");
     return;
   }
 
@@ -257,15 +287,15 @@ async function submitLevel4Step1() {
   } else {
     playSound("snd-error");
     log(`LEVEL 4 (STEP 1) FAILED -> [${masterNum}]`, "err");
-    if (response.penalty) location.reload();
+    if (response.penalty) {
+      triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
+    }
   }
 }
 
 async function submitLevel4Step2() {
   if (!verifyMouseBehavior()) {
-    playSound("snd-error");
-    log("🚨 BOT DETECTED: Unnatural or missing mouse telemetry!", "err");
-    setTimeout(() => location.reload(), 1500);
+    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 4 Step 2.");
     return;
   }
 
@@ -313,7 +343,9 @@ async function submitLevel4Step2() {
   } else {
     playSound("snd-error");
     log(`LEVEL 4 (STEP 2) FAILED -> [${tokenInput}]`, "err");
-    if (response.penalty) location.reload();
+    if (response.penalty) {
+      triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
+    }
   }
 }
 
@@ -322,9 +354,7 @@ async function submitLevel4Step2() {
 // ==========================================
 async function submitLevel5() {
   if (!verifyMouseBehavior()) {
-    playSound("snd-error");
-    log("🚨 BOT DETECTED: Unnatural or missing mouse telemetry!", "err");
-    setTimeout(() => location.reload(), 1500);
+    triggerHackerTrap("Unnatural or missing mouse telemetry during Level 5 Final Stand.");
     return;
   }
 
@@ -348,6 +378,8 @@ async function submitLevel5() {
   } else {
     playSound("snd-error");
     log(`LEVEL 5 FAILED: Invalid Final Code -> [${codeInput}]`, "err");
-    if (response.penalty) location.reload();
+    if (response.penalty) {
+      triggerHackerTrap("Server-side rate limit exceeded / Blasting attack flagged.");
+    }
   }
 }
